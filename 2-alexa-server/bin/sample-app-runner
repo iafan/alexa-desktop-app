@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# This is a proxy script executed by the server.
+
+# It assumes that AVS SDK is installed under ~/sdk-folder
+# (as per original installation instructions from AVS SDK).
+
+ROOT=$HOME/sdk-folder
+
+# et the absolute directory of this script
+
+DIR=`dirname $0`
+cd $DIR
+DIR=`pwd`
+
+# run the sample app with the provided config
+
+$ROOT/sdk-build/SampleApp/src/SampleApp \
+    $DIR/AlexaClientSDKConfig.json \
+    $ROOT/third-party/snowboy/resources

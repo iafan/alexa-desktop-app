@@ -1,0 +1,14 @@
+{
+    "name": "alexa-desktop-app",
+    "version": "0.1.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "author": "Igor Afanasyev",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/iafan/alexa-desktop-app/issues"
+    },
+    "homepage": "https://github.com/iafan/alexa-desktop-app"
+}

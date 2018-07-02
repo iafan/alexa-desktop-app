@@ -1,0 +1,28 @@
+{
+    "deviceInfo": {
+        "deviceSerialNumber": "001",
+        "clientId": "{MY_CLIENT_ID}",
+        "productId": "{MY_PRODUCT_ID}"
+    },
+    "cblAuthDelegate": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/cblAuthDelegate.db"
+    },
+    "miscDatabase": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/miscDatabase.db"
+    },
+    "alertsCapabilityAgent": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/alerts.db"
+    },
+    "settings": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/settings.db",
+        "defaultAVSClientSettings": {
+            "locale": "en-US"
+        }
+    },
+    "certifiedSender": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/certifiedSender.db"
+    },
+    "notifications": {
+        "databaseFilePath": "{MY_HOME_PATH}/sdk-folder/application-necessities/notifications.db"
+    }
+}

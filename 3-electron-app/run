@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/Applications/Electron.app/Contents/MacOS/Electron .

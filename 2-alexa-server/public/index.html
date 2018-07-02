@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="standalone">
+
+<head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:100,300,400" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            overflow: hidden;
+            margin: 0;
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            font-family: Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+            'Helvetica Neue', sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            cursor: default;
+            user-select: none;
+            background: rgba(0, 0, 0, 0);
+            color: #fff;
+            pointer-events: none;
+        }
+
+        #ring {
+            width: 480px;
+            height: 480px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            border-radius: 480px;
+            padding: 100px;
+            /*background: #000;*/
+            color: #999;
+        }
+
+        #ring>div {
+            position: relative;
+            height: 100%;
+        }
+
+        .standalone #ring {
+            width: 280px;
+            height: 280px;
+            border-radius: 280px;
+            padding: 40px;
+        }
+
+        #content {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .ring-border {
+            border: 6px solid #000;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border-radius: 100%;
+            position: absolute;
+            box-shadow: 0 0 50px #39f;
+        }
+
+        .standalone .ring-border {
+            border: 4px solid #222;
+        }
+
+        .idle .ring-border {
+            box-shadow: none;
+        }
+
+        .listening .ring-border,
+        .listening.mute .ring-border {
+            border-color: #39f;
+            animation: glow 1000ms alternate infinite ease-in;
+        }
+
+        .thinking .ring-border {
+            border-color: #39f #9ef #39f #9ef;
+            animation: spin 500ms infinite linear;
+        }
+
+        .speaking .ring-border {
+            animation: glow-speaking 1000ms alternate infinite ease-in;
+        }
+
+        .playing .ring-border {
+            border-color: #9ef;
+            animation: glow-playing 1000ms alternate infinite ease-in;
+        }
+
+        .mute .ring-border {
+            border-color: #f80;
+            animation: glow-muted 1000ms alternate infinite ease-in;
+        }
+
+        #ring .inner {
+            display: grid;
+            grid-template-rows: 1fr auto 1fr;
+            background: #000;
+            color: #fff;
+            border-radius: 100%;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            pointer-events: all;
+            -webkit-app-region: drag;
+            background-size: cover;
+        }
+
+        #content {
+            padding: 20px;
+            font-size: 20px;
+        }
+
+        #title {
+            display: inline-block;
+            word-break: break-word;
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0.5;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes glow-speaking {
+            from {
+                border-color: #39f;
+                box-shadow: 0 0 70px #39f;
+            }
+            to {
+                border-color: #9ef;
+                box-shadow: 0 0 20px #39f;
+            }
+        }
+
+        @keyframes glow-playing {
+            from {
+                box-shadow: 0 0 70px #39f;
+            }
+            to {
+                box-shadow: 0 0 20px #39f;
+            }
+        }
+
+        @keyframes glow-muted {
+            from {
+                border-color: #f80;
+            }
+            to {
+                border-color: #940;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div></div>
+    <div>
+        <div id="ring">
+            <div>
+                <div class="ring-border"></div>
+                <div id="inner" class="inner">
+                    <div></div>
+                    <div id="content">
+                        <div id="title"></div>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div></div>
+    <script>
+        var state = {};
+        var prevState = {};
+        contentObj = document.getElementById('content');
+        ringObj = document.getElementById('ring');
+        innerObj = document.getElementById('inner');
+        titleObj = document.getElementById('title');
+
+        function connectToServer() {
+            console.log('Connecting to server...');
+            socket = new WebSocket('ws://' + location.host + '/ws');
+            socket.onopen = function (e) {
+                console.log('socket.onopen', e);
+            };
+            socket.onclose = function (e) {
+                console.log('socket.onclose', e);
+                setTimeout(connectToServer, 1000);
+            };
+            socket.onmessage = function (e) {
+                console.log('socket.onmessage:', e);
+                var data;
+                try {
+                    var newState = JSON.parse(e.data);
+                    if (newState.raw_payload !== undefined) {
+                        newState.raw_payload = JSON.parse(newState.raw_payload);
+                    }
+                    prevState = state;
+                    state = newState;
+                    console.log(state);
+                } catch (e) {
+                    console.error(e);
+                    return;
+                }
+
+                if (state.state === "connecting") {
+                    state = prevState
+                }
+
+                className = state.state || ""
+                if (state.audiostate === "playing") {
+                    className += " playing";
+                }
+                if (state.audiostate === "paused") {
+                    className += " paused";
+                }
+                if (state.mute) {
+                    className += " mute";
+                }
+
+                if (state.card) {
+                    className += " card";
+                }
+
+                document.body.className = className;
+                label = state.title || "";//"Quick brown fox jumped over the lazy dog";
+
+                if (state && state.raw_payload && state.raw_payload.content) {
+                    var content = state.raw_payload.content;
+                    content.title && (label = content.title);
+
+                    /*
+                    if (content.art && content.art.sources) {
+                        var url = content.art.sources[0].url;
+                        innerObj.style.backgroundImage = 'url(' + url + ')';
+                    }
+                    */
+                } else {
+                    //innerObj.style.backgroundImage = '';
+                }
+
+                titleObj.innerText = label;
+            };
+        }
+
+        function onWindowResize() {
+            width = document.body.offsetWidth;
+            height = document.body.offsetHeight;
+
+            var isFullScreen = width === 640 && height === 480;
+            document.documentElement.classList.toggle("standalone", !isFullScreen)
+            console.log('window:resize', 'width:', width, 'height:', height, 'isFullScreen:', isFullScreen);
+        }
+
+        onWindowResize();
+        connectToServer();
+
+        window.onresize = onWindowResize;
+
+        //contentObj.classList.toggle("card", true)
+        //label = "what's the diameter of the earth?";// state.title || state.state;
+        //titleObj.innerText = label;
+
+    </script>
+</body>
+
+</html>
